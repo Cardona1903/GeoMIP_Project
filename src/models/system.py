@@ -7,10 +7,10 @@ class System:
     """
     Representa el sistema con su TPM y estado inicial.
 
-    Convención de bits: A=bit0 (LSB), B=bit1, C=bit2, ...
-    Los CSVs del documento usan orden 'cba' (última variable=A).
-    El método desde_csv() reordena automáticamente las filas
-    para que row i = estado con índice LE i.
+    Convención interna: variable_0=bit0 (LSB), ..., variable_{n-1}=bit{n-1}.
+    Los CSVs del documento etiquetan los estados como 'abc' donde A=primer
+    dígito, pero internamente usan C=bit0. El método desde_csv() corrige
+    esto invirtiendo el orden de columnas (A↔C) al cargar.
     """
 
     def __init__(
@@ -30,125 +30,104 @@ class System:
     @classmethod
     def desde_csv(cls, filepath: str, estado_inicial: str) -> "System":
         """
-        Carga la TPM desde CSV reordenando filas al formato LE.
+        Carga la TPM desde CSV aplicando corrección de orden de columnas.
 
-        El documento ordena los estados como 'cba' (última var = A),
-        por lo que el CSV row i no corresponde al estado LE i.
-        Esta función reordena para que row i = LE index i.
+        El documento etiqueta las columnas como At+1, Bt+1, Ct+1
+        pero la columna 0 del CSV corresponde internamente a la variable
+        de mayor índice (C para n=3). Se invierte el orden de columnas
+        para que la columna i corresponda a la variable i (bit i).
         """
         df = pd.read_csv(filepath, header=None, low_memory=False)
-        primera = df.iloc[0]
+
+        # Detectar y saltar encabezado de texto si existe
         try:
-            primera.astype(float)
+            df.iloc[0].astype(float)
         except (ValueError, TypeError):
             df = df.iloc[1:].reset_index(drop=True)
 
         tpm_doc = df.values.astype(np.float64)
         n = len(estado_inicial)
 
-        # Si TPM es estado-estado (2^n x 2^n), convertir a estado-nodo
-        if tpm_doc.shape[1] == 2 ** n and tpm_doc.shape[0] == 2 ** n:
+        # Si es formato estado-estado (2^n x 2^n), convertir a estado-nodo
+        if tpm_doc.shape[0] == 2**n and tpm_doc.shape[1] == 2**n:
             tpm_doc = cls._ee_a_nodo(tpm_doc, n)
 
-        # Reordenar filas: el doc usa orden 'cba' donde el primer dígito
-        # es la ÚLTIMA variable (C para n=3, o la variable n-1 en general).
-        # Fila doc_i corresponde al estado donde los bits se leen al revés:
-        # doc state 'xyz' -> variable_0=z (LSB), ..., variable_{n-1}=x
-        tpm_le = cls._reordenar_doc_a_le(tpm_doc, n)
+        # Invertir orden de columnas: col_doc_0 -> col_interna_{n-1}, etc.
+        # Esto corrige que el doc usa A=col0 pero internamente A=col{n-1}
+        tpm = tpm_doc[:, ::-1].copy()
 
         etiquetas = [chr(ord('A') + i) for i in range(n)]
-        return cls(tpm_le, estado_inicial, etiquetas)
-
-    @staticmethod
-    def _reordenar_doc_a_le(
-        tpm_doc: NDArray[np.float64],
-        n: int
-    ) -> NDArray[np.float64]:
-        """
-        Convierte de orden doc (cba = última var es bit0) a LE (A=bit0).
-
-        En el documento, el estado i-ésimo en el CSV se interpreta como:
-        - El dígito MÁS significativo del índice i es la PRIMERA variable
-        - Pero la primera variable del doc es la ÚLTIMA (C en n=3)
-
-        Equivalente: doc_row_i -> LE_index = int(bin(i).zfill(n)[::-1], 2)
-        """
-        num_estados = 2 ** n
-        tpm_le = np.zeros_like(tpm_doc)
-        for doc_idx in range(num_estados):
-            # Convertir índice doc a índice LE
-            # doc_idx en binario (n bits), luego invertir los bits
-            bits = format(doc_idx, f'0{n}b')  # big-endian bit string
-            bits_rev = bits[::-1]              # reverse -> LE bit string
-            le_idx = int(bits_rev, 2)
-            tpm_le[le_idx] = tpm_doc[doc_idx]
-        return tpm_le
+        return cls(tpm, estado_inicial, etiquetas)
 
     @staticmethod
     def _ee_a_nodo(tpm_ee: NDArray, n: int) -> NDArray:
-        num_states = 2 ** n
-        tpm_nodo = np.zeros((num_states, n), dtype=np.float64)
+        """Convierte TPM estado-estado a estado-nodo."""
+        num_s = 2 ** n
+        tpm_nodo = np.zeros((num_s, n), dtype=np.float64)
         for j in range(n):
-            for s in range(num_states):
-                for ns in range(num_states):
+            for s in range(num_s):
+                for ns in range(num_s):
                     if (ns >> j) & 1:
                         tpm_nodo[s, j] += tpm_ee[s, ns]
         return tpm_nodo
 
-    def condicionar(self, indices_externos, valores):
+    def condicionar(
+        self,
+        indices_externos: list[int],
+        valores: list[int]
+    ) -> "System":
+        """Condiciona la TPM fijando variables externas a sus valores actuales."""
         mascara = np.ones(self.num_estados, dtype=bool)
         for idx, val in zip(indices_externos, valores):
             for s in range(self.num_estados):
-                if (s >> idx) & 1 != val:
+                if ((s >> idx) & 1) != val:
                     mascara[s] = False
-        tpm_filtrada = self.tpm[mascara, :]
+        tpm_f = self.tpm[mascara, :]
         cols = [j for j in range(self.n) if j not in indices_externos]
-        tpm_cond = tpm_filtrada[:, cols]
         nuevo_estado = ''.join(
             self.estado_inicial[i] for i in range(self.n)
             if i not in indices_externos
         )
-        nuevas_etqs = [self.etiquetas[i] for i in range(self.n)
-                       if i not in indices_externos]
-        return System(tpm_cond, nuevo_estado, nuevas_etqs)
+        etqs = [self.etiquetas[i] for i in range(self.n)
+                if i not in indices_externos]
+        return System(tpm_f[:, cols], nuevo_estado, etqs)
 
-    def marginalizar_filas(self, indices_elim):
-        vars_rest = [i for i in range(self.n) if i not in indices_elim]
-        n_nuevo = len(vars_rest)
-        num_nuevo = 2 ** n_nuevo
-        tpm_nueva = np.zeros((num_nuevo, self.tpm.shape[1]), dtype=np.float64)
-        conteos = np.zeros(num_nuevo, dtype=int)
+    def marginalizar_filas(self, indices_elim: list[int]) -> "System":
+        """Marginaliza eliminando variables del tiempo t (filas)."""
+        vars_r = [i for i in range(self.n) if i not in indices_elim]
+        n_n = len(vars_r)
+        num_n = 2 ** n_n
+        tpm_n = np.zeros((num_n, self.tpm.shape[1]), dtype=np.float64)
+        cnt = np.zeros(num_n, dtype=int)
         for s in range(self.num_estados):
-            idx_red = sum(
-                ((s >> var) & 1) << pos
-                for pos, var in enumerate(vars_rest)
-            )
-            tpm_nueva[idx_red] += self.tpm[s]
-            conteos[idx_red] += 1
-        for i in range(num_nuevo):
-            if conteos[i] > 0:
-                tpm_nueva[i] /= conteos[i]
-        nuevo_estado = ''.join(self.estado_inicial[i] for i in vars_rest)
-        nuevas_etqs = [self.etiquetas[i] for i in vars_rest]
-        return System(tpm_nueva, nuevo_estado, nuevas_etqs)
+            idx_r = sum(((s >> v) & 1) << p for p, v in enumerate(vars_r))
+            tpm_n[idx_r] += self.tpm[s]
+            cnt[idx_r] += 1
+        for i in range(num_n):
+            if cnt[i] > 0:
+                tpm_n[i] /= cnt[i]
+        nuevo_estado = ''.join(self.estado_inicial[i] for i in vars_r)
+        etqs = [self.etiquetas[i] for i in vars_r]
+        return System(tpm_n, nuevo_estado, etqs)
 
-    def marginalizar_columnas(self, indices_elim):
+    def marginalizar_columnas(self, indices_elim: list[int]) -> "System":
+        """Marginaliza eliminando variables del tiempo t+1 (columnas)."""
         cols = [j for j in range(self.n) if j not in indices_elim]
-        tpm_nueva = self.tpm[:, cols]
-        nuevas_etqs = [self.etiquetas[j] for j in cols]
-        return System(tpm_nueva, self.estado_inicial, nuevas_etqs)
+        etqs = [self.etiquetas[j] for j in cols]
+        return System(self.tpm[:, cols], self.estado_inicial, etqs)
 
-    def obtener_tensores(self):
+    def obtener_tensores(self) -> list[NDArray[np.float64]]:
+        """Retorna n tensores elementales: uno por variable futura."""
         return [self.tpm[:, j].copy() for j in range(self.n)]
 
-    def distribucion_estado_inicial(self):
-        idx = int(self.estado_inicial[::-1], 2)
-        probs_1 = self.tpm[idx % self.num_estados]
+    def distribucion_estado_inicial(self) -> NDArray[np.float64]:
+        """Distribución conjunta P(X_t+1 | estado_inicial) por producto tensorial."""
+        idx = int(self.estado_inicial[::-1], 2) % self.num_estados
         dist = np.array([1.0])
-        for p1 in probs_1:
+        for p1 in self.tpm[idx]:
             dist = np.kron(dist, np.array([1.0 - p1, p1]))
         return dist
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return (f"System(n={self.n}, estado='{self.estado_inicial}', "
                 f"etiquetas={self.etiquetas}, tpm_shape={self.tpm.shape})")

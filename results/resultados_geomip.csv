@@ -1,1 +1,5 @@
 N,estado_inicial,parte1,parte2,phi,tiempo_s,estrategia
+3,000,[1],"[0, 2]",0.00000000,9.395494,GeometricSIA-Paralelo
+5,00000,"[0, 3]","[1, 2, 4]",0.00000000,2.068147,GeometricSIA-Paralelo
+10,0000000000,[4],"[0, 1, 2, 3, 5, 6, 7, 8, 9]",1.00000000,51.602587,GeometricSIA-Paralelo
+15,000000000000000,[6],"[0, 1, 2, 3, 4, 5, 7, 8, 9, 10, 11, 12, 13, 14]",1.00000000,11172.324107,GeometricSIA-Paralelo
