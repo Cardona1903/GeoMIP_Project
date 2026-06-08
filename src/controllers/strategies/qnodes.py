@@ -206,8 +206,13 @@ class KQNodes(SIA):
         mejor_dist      = dist_orig.copy()
         evaluadas       = 0
 
-        # Límite de seguridad para sistemas muy grandes
-        max_candidatas = 200_000 if n <= 10 else 10_000
+        # Límite adaptativo: exacto para n≤10, reducido para n grandes
+        if n <= 10:
+            max_candidatas = 200_000
+        elif n <= 12:
+            max_candidatas = 10_000
+        else:               # n > 12: limitar para mantener tiempo razonable
+            max_candidatas = 5_000
 
         for particion in _particionar_conjunto(variables, k):
             if evaluadas >= max_candidatas:
@@ -320,6 +325,17 @@ class KQNodes(SIA):
 
         phi_actual = calcular_phi(grupos)
 
+        def _retorno_greedy(grupos, phi, metodo='greedy_qnodes'):
+            return {
+                'biparticion': [sorted(g) for g in grupos],
+                'phi':         phi,
+                'phi_raw':     phi * n_full,
+                'dist_orig':   dist_orig,
+                'dist_part':   dist_orig.copy(),
+                'tiempo':      time.time() - t0,
+                'metodo':      metodo,
+            }
+
         # Fase 1: mover una variable a la vez
         mejorado = True
         iters    = 0
@@ -343,6 +359,8 @@ class KQNodes(SIA):
                             grupos     = nuevos
                             phi_actual = phi_n
                             mejorado   = True
+                            if phi_actual < 1e-9:
+                                return _retorno_greedy(grupos, 0.0, 'greedy_qnodes_phi0')
                             break
                     if mejorado:
                         break
@@ -375,17 +393,12 @@ class KQNodes(SIA):
                                 grupos        = nuevos
                                 phi_actual    = phi_n
                                 swap_mejorado = True
+                                if phi_actual < 1e-9:
+                                    return _retorno_greedy(
+                                        grupos, 0.0, 'greedy_qnodes_phi0')
                                 break
 
-        return {
-            'biparticion': [sorted(g) for g in grupos],
-            'phi':         phi_actual,
-            'phi_raw':     phi_actual * n_full,
-            'dist_orig':   dist_orig,
-            'dist_part':   dist_orig.copy(),
-            'tiempo':      time.time() - t0,
-            'metodo':      'greedy_qnodes',
-        }
+        return _retorno_greedy(grupos, phi_actual)
 
     # ==================================================================
     # IMPRESIÓN DE RESULTADOS

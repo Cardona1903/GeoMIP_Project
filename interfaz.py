@@ -1213,12 +1213,13 @@ class App(tk.Tk):
                     res_qn_vacio  = {'phi': 0.0, 'k': None, 'biparticion': None,
                                      'por_k': {}, 'resultados_por_k': {},
                                      'nota': 'interseccion_vacia'}
-                    self._ultimo_res_geo   = res_geo_vacio
-                    self._ultimo_res_qn    = res_qn_vacio
-                    self._ultimo_sub       = sub
-                    self._ultimo_t_geo     = 0.0
-                    self._ultimo_t_qn      = 0.0
-                    self._ultimo_n_sistema = len(sistema)
+                    self._ultimo_res_geo      = res_geo_vacio
+                    self._ultimo_res_geo_full = None   # evitar datos geo_full de prueba anterior
+                    self._ultimo_res_qn       = res_qn_vacio
+                    self._ultimo_sub          = sub
+                    self._ultimo_t_geo        = 0.0
+                    self._ultimo_t_qn         = 0.0
+                    self._ultimo_n_sistema    = len(sistema)
                     _alc  = alcance
                     _mec  = mec
                     _n_sis = len(sistema)
@@ -2151,12 +2152,16 @@ class App(tk.Tk):
                 return '∅' if not s1 and not s2 else f"{s1}|{s2}"
 
             def fmt_part_qn(parts):
-                if not parts:
-                    return None
-                return ' | '.join(
-                    '{' + ''.join(etqs[v] for v in p if v < len(etqs)) + '}'
+                if not parts or all(len(p) == 0 for p in parts):
+                    return '∅'
+                parts_strs = [
+                    ''.join(etqs[v] for v in p if v < len(etqs))
                     for p in parts
-                )
+                    if len(p) > 0
+                ]
+                if not parts_strs or all(s == '' for s in parts_strs):
+                    return '∅'
+                return ' | '.join('{' + s + '}' for s in parts_strs)
 
             res_geo = self._ultimo_res_geo
             res_qn  = self._ultimo_res_qn
