@@ -73,13 +73,15 @@ def _dist_parte_vectorizada(
     for pos, bit in enumerate(pres_sorted):
         idx_red += ((all_states >> bit) & 1) << pos
 
-    # Marginalización: acumular y promediar
-    tpm_red = np.zeros((num_pres, len(futuro_cols)), dtype=np.float64)
-    counts  = np.zeros(num_pres, dtype=np.int32)
-    np.add.at(tpm_red, idx_red, tpm_cols)
-    np.add.at(counts,  idx_red, 1)
-    mask = counts > 0
-    tpm_red[mask] /= counts[mask, np.newaxis]
+    # Marginalización con np.bincount (mucho más rápido que np.add.at)
+    counts      = np.bincount(idx_red, minlength=num_pres)
+    safe_counts = np.maximum(counts, 1)
+    tpm_red     = np.zeros((num_pres, len(futuro_cols)), dtype=np.float64)
+    for jj in range(len(futuro_cols)):
+        tpm_red[:, jj] = (
+            np.bincount(idx_red, weights=tpm_cols[:, jj], minlength=num_pres)
+            / safe_counts
+        )
 
     # Estado inicial reducido al mecanismo de esta parte
     idx_pres = sum(((idx_inicio >> bit) & 1) << pos
@@ -155,9 +157,9 @@ class KQNodes(SIA):
         for k in [2, 3, 4, 5]:
             if k > n:
                 continue
-            # k=2: exacto hasta n=17 (S(17,2)=65535 ~131s OK), greedy para n>17
+            # k=2: exacto hasta n=13 (S(13,2)=4095 ~8s con bincount), greedy para n>13
             # k>=3: exacto solo para n<=7
-            usar_exacto = (k == 2 and n <= 17) or (k >= 3 and n <= 7)
+            usar_exacto = (k == 2 and n <= 13) or (k >= 3 and n <= 7)
             if usar_exacto:
                 res_k = self._buscar_k_particion_exacto(
                     k, variables, dist_orig
@@ -308,11 +310,13 @@ class KQNodes(SIA):
         if timeout_s is None:
             n_loc = len(variables)
             if n_loc >= 18:
-                timeout_s = 45.0
+                timeout_s = 12.0   # 4 k-values × 12s ≈ 48s total
             elif n_loc >= 15:
-                timeout_s = 60.0
+                timeout_s = 25.0   # 4 k-values × 25s ≈ 100s total
+            elif n_loc >= 13:
+                timeout_s = 40.0
             else:
-                timeout_s = 90.0
+                timeout_s = 60.0
         n_full = self.n
         tpm    = self.sistema.tpm
         idx_inicio = int(self.sistema.estado_inicial[::-1], 2)
