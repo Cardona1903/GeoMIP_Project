@@ -154,6 +154,63 @@ SUITES = {
             ('BDFHJLN',         'BDFHJLN'),          ('BCDEFGJKLMNO',    'BCDEFGHIJKLMNO'),
         ],
     },
+    'N=20': {
+        'sistema': 'ABCDEFGHIJKLMNOPQRST',
+        'estado':  '10000000000000000000',
+        'csv':     'data/N20C.csv',
+        'pruebas': [
+            ('ABCDEFGHIJKLMNOPQRST', 'ABCDEFGHIJKLMNOPQRST'),
+            ('ABCDEFGHIJKLMNOPQRST', 'ABCDEFGHIJKLMNOPQRS'),
+            ('ABCDEFGHIJKLMNOPQRST', 'BCDEFGHIJKLMNOPQRST'),
+            ('ABCDEFGHIJKLMNOPQRST', 'BCDEFGHIJKLMNOPQRS'),
+            ('ABCDEFGHIJKLMNOPQRST', 'ABDEGHJKMNPQST'),
+            ('ABCDEFGHIJKLMNOPQRST', 'ACEGIKMOQS'),
+            ('ABCDEFGHIJKLMNOPQRST', 'BDFHJLNPRT'),
+            ('ABCDEFGHIJKLMNOPQRS',  'ABCDEFGHIJKLMNOPQRST'),
+            ('ABCDEFGHIJKLMNOPQRS',  'ABCDEFGHIJKLMNOPQRS'),
+            ('ABCDEFGHIJKLMNOPQRS',  'BCDEFGHIJKLMNOPQRST'),
+            ('ABCDEFGHIJKLMNOPQRS',  'BCDEFGHIJKLMNOPQRS'),
+            ('ABCDEFGHIJKLMNOPQRS',  'ABDEGHJKMNPQST'),
+            ('ABCDEFGHIJKLMNOPQRS',  'ACEGIKMOQS'),
+            ('ABCDEFGHIJKLMNOPQRS',  'BDFHJLNPRT'),
+            ('BCDEFGHIJKLMNOPQRST',  'ABCDEFGHIJKLMNOPQRST'),
+            ('BCDEFGHIJKLMNOPQRST',  'ABCDEFGHIJKLMNOPQRS'),
+            ('BCDEFGHIJKLMNOPQRST',  'BCDEFGHIJKLMNOPQRST'),
+            ('BCDEFGHIJKLMNOPQRST',  'BCDEFGHIJKLMNOPQRS'),
+            ('BCDEFGHIJKLMNOPQRST',  'ABDEGHJKMNPQST'),
+            ('BCDEFGHIJKLMNOPQRST',  'ACEGIKMOQS'),
+            ('BCDEFGHIJKLMNOPQRST',  'BDFHJLNPRT'),
+            ('BCDEFGHIJKLMNOPQRS',   'ABCDEFGHIJKLMNOPQRST'),
+            ('BCDEFGHIJKLMNOPQRS',   'ABCDEFGHIJKLMNOPQRS'),
+            ('BCDEFGHIJKLMNOPQRS',   'BCDEFGHIJKLMNOPQRST'),
+            ('BCDEFGHIJKLMNOPQRS',   'BCDEFGHIJKLMNOPQRS'),
+            ('BCDEFGHIJKLMNOPQRS',   'ABDEGHJKMNPQST'),
+            ('BCDEFGHIJKLMNOPQRS',   'ACEGIKMOQS'),
+            ('BCDEFGHIJKLMNOPQRS',   'BDFHJLNPRT'),
+            ('ABDEGHJKMNPQST',       'ABCDEFGHIJKLMNOPQRST'),
+            ('ABDEGHJKMNPQST',       'ABCDEFGHIJKLMNOPQRS'),
+            ('ABDEGHJKMNPQST',       'BCDEFGHIJKLMNOPQRST'),
+            ('ABDEGHJKMNPQST',       'BCDEFGHIJKLMNOPQRS'),
+            ('ABDEGHJKMNPQST',       'ABDEGHJKMNPQST'),
+            ('ABDEGHJKMNPQST',       'ACEGIKMOQS'),
+            ('ABDEGHJKMNPQST',       'BDFHJLNPRT'),
+            ('ACEGIKMOQS',           'ABCDEFGHIJKLMNOPQRST'),
+            ('ACEGIKMOQS',           'ABCDEFGHIJKLMNOPQRS'),
+            ('ACEGIKMOQS',           'BCDEFGHIJKLMNOPQRST'),
+            ('ACEGIKMOQS',           'BCDEFGHIJKLMNOPQRS'),
+            ('ACEGIKMOQS',           'ABDEGHJKMNPQST'),
+            ('ACEGIKMOQS',           'ACEGIKMOQS'),
+            ('ACEGIKMOQS',           'BDFHJLNPRT'),
+            ('BDFHJLNPRT',           'ABCDEFGHIJKLMNOPQRST'),
+            ('BDFHJLNPRT',           'ABCDEFGHIJKLMNOPQRS'),
+            ('BDFHJLNPRT',           'BCDEFGHIJKLMNOPQRST'),
+            ('BDFHJLNPRT',           'BCDEFGHIJKLMNOPQRS'),
+            ('BDFHJLNPRT',           'ABDEGHJKMNPQST'),
+            ('BDFHJLNPRT',           'ACEGIKMOQS'),
+            ('BDFHJLNPRT',           'BDFHJLNPRT'),
+            ('BCDEFGJKLMNO',         'BCDEFGHIJKLMNO'),
+        ],
+    },
 }
 
 # ── Stirling de segunda especie S(n,k) ─────────────────────────────────────
@@ -1168,23 +1225,32 @@ class App(tk.Tk):
 
         try:
             if csv_path and os.path.exists(csv_path):
-                self._post(kind="status", text="Cargando CSV…")
-                self._post(kind="log",
-                           text=f"📂 CSV: {csv_path}", tag="info")
-                sys_full = System.desde_csv(csv_path, estado)
+                if not hasattr(self, '_sistema_csv_cache'):
+                    self._sistema_csv_cache = {}
+                cache_key = (csv_path, estado)
+                if cache_key in self._sistema_csv_cache:
+                    sys_full = self._sistema_csv_cache[cache_key]
+                    self._post(kind="log",
+                               text=f"📂 CSV: {csv_path} (caché)", tag="info")
+                else:
+                    self._post(kind="status", text="Cargando CSV…")
+                    self._post(kind="log",
+                               text=f"📂 CSV: {csv_path}", tag="info")
+                    sys_full = System.desde_csv(csv_path, estado)
 
-                if sys_full.tpm.shape[0] != 2 ** sys_full.n:
-                    n_csv = sys_full.tpm.shape[1]
-                    if n_csv > 0 and sys_full.tpm.shape[0] == 2 ** n_csv:
-                        estado_csv = (estado + '0' * n_csv)[:n_csv]
-                        sys_full = System.desde_csv(csv_path, estado_csv)
-                        self._post(kind="log",
-                                   text=f"  ⚠ Estado corregido: "
-                                        f"'{estado}'→'{estado_csv}'",
-                                   tag="warn")
-                    else:
-                        raise ValueError(
-                            f"CSV incompatible: {sys_full.tpm.shape}")
+                    if sys_full.tpm.shape[0] != 2 ** sys_full.n:
+                        n_csv = sys_full.tpm.shape[1]
+                        if n_csv > 0 and sys_full.tpm.shape[0] == 2 ** n_csv:
+                            estado_csv = (estado + '0' * n_csv)[:n_csv]
+                            sys_full = System.desde_csv(csv_path, estado_csv)
+                            self._post(kind="log",
+                                       text=f"  ⚠ Estado corregido: "
+                                            f"'{estado}'→'{estado_csv}'",
+                                       tag="warn")
+                        else:
+                            raise ValueError(
+                                f"CSV incompatible: {sys_full.tpm.shape}")
+                    self._sistema_csv_cache[cache_key] = sys_full
 
                 self._post(kind="status", text="Construyendo subsistema…")
                 sub = sys_full.construir_subsistema(list(alcance), list(mec))
@@ -1208,11 +1274,33 @@ class App(tk.Tk):
                                text=(f"  ⚠ Alcance ∩ Mecanismo = ∅  →  φ = 0 por definición\n"
                                      f"  (sin variables en común, no hay dependencia causal medible)"),
                                tag="warn")
-                    res_geo_vacio = {'phi': 0.0, 'biparticion': ([], []),
-                                     'nota': 'interseccion_vacia'}
-                    res_qn_vacio  = {'phi': 0.0, 'k': None, 'biparticion': None,
-                                     'por_k': {}, 'resultados_por_k': {},
-                                     'nota': 'interseccion_vacia'}
+                    res_geo_vacio = {
+                        'phi':              0.0,
+                        'k':                None,
+                        'biparticion':      None,
+                        'tiempo':           0.0,
+                        'nota':             'interseccion_vacia',
+                        'resultados_por_k': {
+                            2: {'phi': 0.0, 'biparticion': None, 'tiempo': 0.0, 'k': 2, 'metodo': 'vacio'},
+                            3: {'phi': 0.0, 'biparticion': None, 'tiempo': 0.0, 'k': 3, 'metodo': 'vacio'},
+                            4: {'phi': 0.0, 'biparticion': None, 'tiempo': 0.0, 'k': 4, 'metodo': 'vacio'},
+                            5: {'phi': 0.0, 'biparticion': None, 'tiempo': 0.0, 'k': 5, 'metodo': 'vacio'},
+                        }
+                    }
+                    res_qn_vacio = {
+                        'phi':              0.0,
+                        'k':                None,
+                        'biparticion':      None,
+                        'tiempo':           0.0,
+                        'nota':             'interseccion_vacia',
+                        'resultados_por_k': {
+                            2: {'phi': 0.0, 'biparticion': None, 'tiempo': 0.0, 'k': 2, 'metodo': 'vacio'},
+                            3: {'phi': 0.0, 'biparticion': None, 'tiempo': 0.0, 'k': 3, 'metodo': 'vacio'},
+                            4: {'phi': 0.0, 'biparticion': None, 'tiempo': 0.0, 'k': 4, 'metodo': 'vacio'},
+                            5: {'phi': 0.0, 'biparticion': None, 'tiempo': 0.0, 'k': 5, 'metodo': 'vacio'},
+                        },
+                        'por_k': {}
+                    }
                     self._ultimo_res_geo      = res_geo_vacio
                     self._ultimo_res_geo_full = None   # evitar datos geo_full de prueba anterior
                     self._ultimo_res_qn       = res_qn_vacio
@@ -1273,8 +1361,8 @@ class App(tk.Tk):
                 self._ultimo_res_geo_full = geo_res if geo_res else None
                 self._ultimo_res_qn       = qnod_res
                 self._ultimo_sub          = sub
-                self._ultimo_t_geo        = geo_res["tiempo"]  if geo_res  else 0.0
-                self._ultimo_t_qn         = qnod_res["tiempo"] if qnod_res else 0.0
+                self._ultimo_t_geo        = geo_res.get("tiempo", 0.0)  if geo_res  else 0.0
+                self._ultimo_t_qn         = qnod_res.get("tiempo", 0.0) if qnod_res else 0.0
 
         except Exception as exc:
             import traceback
@@ -1490,8 +1578,8 @@ class App(tk.Tk):
         qnod = msg.get("qnod")
         if geo or qnod:
             sub   = msg.get("sub")
-            t_geo = geo["tiempo"]  if geo  else 0.0
-            t_qn  = qnod["tiempo"] if qnod else 0.0
+            t_geo = geo.get("tiempo", 0.0)  if geo  else 0.0
+            t_qn  = qnod.get("tiempo", 0.0) if qnod else 0.0
             # Guardar referencias para exportar_a_excel
             self._ultimo_res_geo      = geo
             self._ultimo_res_geo_full = geo
@@ -1755,12 +1843,13 @@ class App(tk.Tk):
             return "".join(etqs[i] for i in idxs if i < len(etqs))
 
         # KGeoMIP k=2
-        if geo:
-            p1, p2 = geo['biparticion']
+        bip = geo.get('biparticion') if geo else None
+        if geo and bip and len(bip) == 2:
+            p1, p2 = bip
             geo_d = {
                 'part': f"[{lbl(p1)}]|[{lbl(p2)}]",
                 'phi':  f"{geo['phi']:.6f}",
-                't':    f"{geo['tiempo']:.3f}",
+                't':    f"{geo.get('tiempo', 0.0):.3f}",
             }
         else:
             geo_d = {'part': '—', 'phi': '—', 't': '—'}

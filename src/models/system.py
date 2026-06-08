@@ -189,11 +189,16 @@ class System:
                 etqs_sub = [v for v in self.etiquetas if v in alcance_vars]
                 return System(tpm_sub, self.estado_inicial, etqs_sub)
             except Exception as e:
+                self._usa_spark = False  # no reintentar Spark en llamadas sucesivas
                 print(f"  [Spark] Error en subsistema ({e}), recargando con numpy")
-                sistema_completo = System._desde_csv_numpy(
-                    self._spark_path, self.estado_inicial
+                if not hasattr(self, '_sistema_numpy_cache'):
+                    self._sistema_numpy_cache = System._desde_csv_numpy(
+                        self._spark_path, self.estado_inicial
+                    )
+                    self.tpm = self._sistema_numpy_cache.tpm
+                return self._sistema_numpy_cache.construir_subsistema(
+                    alcance_vars, mecanismo_vars
                 )
-                return sistema_completo.construir_subsistema(alcance_vars, mecanismo_vars)
 
         # Paso 1: condicionar variables fuera del mecanismo
         fuera_mec_indices = [

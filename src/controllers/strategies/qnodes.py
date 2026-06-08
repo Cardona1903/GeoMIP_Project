@@ -155,9 +155,9 @@ class KQNodes(SIA):
         for k in [2, 3, 4, 5]:
             if k > n:
                 continue
-            # k=2 exacto hasta n=20 (S(n,2)=2^(n-1)-1, manejable)
-            # k>=3 exacto solo para n<=7
-            usar_exacto = (k == 2 and n <= 20) or (k >= 3 and n <= 7)
+            # k=2: exacto hasta n=17 (S(17,2)=65535 ~131s OK), greedy para n>17
+            # k>=3: exacto solo para n<=7
+            usar_exacto = (k == 2 and n <= 17) or (k >= 3 and n <= 7)
             if usar_exacto:
                 res_k = self._buscar_k_particion_exacto(
                     k, variables, dist_orig
@@ -165,7 +165,7 @@ class KQNodes(SIA):
                 res_k['metodo'] = 'exacto_stirling'
             else:
                 res_k = self._greedy_k_qnodes(
-                    k, variables, dist_orig, timeout_s=90.0
+                    k, variables, dist_orig
                 )
             resultados_por_k[k] = res_k
 
@@ -206,12 +206,15 @@ class KQNodes(SIA):
         mejor_dist      = dist_orig.copy()
         evaluadas       = 0
 
-        # Límite adaptativo: exacto para n≤10, reducido para n grandes
-        if n <= 10:
+        # Para k=2 exacto: S(n,2) = 2^(n-1)-1; permitir todas las biparticiones
+        # Para k>=3: limitar para mantener tiempo razonable
+        if k == 2:
+            max_candidatas = 2 ** (n - 1)   # >= S(n,2)+1, ningún corte
+        elif n <= 10:
             max_candidatas = 200_000
         elif n <= 12:
             max_candidatas = 10_000
-        else:               # n > 12: limitar para mantener tiempo razonable
+        else:
             max_candidatas = 5_000
 
         for particion in _particionar_conjunto(variables, k):
@@ -292,7 +295,7 @@ class KQNodes(SIA):
     # ==================================================================
 
     def _greedy_k_qnodes(self, k: int, variables: list,
-                         dist_orig, timeout_s: float = 90.0) -> dict:
+                         dist_orig, timeout_s: float = None) -> dict:
         """
         Greedy + búsqueda local para KQNodes cuando n > 7.
 
@@ -302,6 +305,14 @@ class KQNodes(SIA):
         """
         import time
         t0     = time.time()
+        if timeout_s is None:
+            n_loc = len(variables)
+            if n_loc >= 18:
+                timeout_s = 45.0
+            elif n_loc >= 15:
+                timeout_s = 60.0
+            else:
+                timeout_s = 90.0
         n_full = self.n
         tpm    = self.sistema.tpm
         idx_inicio = int(self.sistema.estado_inicial[::-1], 2)

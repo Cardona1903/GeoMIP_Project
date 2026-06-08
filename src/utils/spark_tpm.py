@@ -18,8 +18,20 @@ from numpy.typing import NDArray
 def _spark_disponible() -> bool:
     try:
         import pyspark  # noqa: F401
-        return True
-    except ImportError:
+        import subprocess, re
+        result = subprocess.run(
+            ['java', '-version'], capture_output=True, text=True, timeout=5
+        )
+        ver_text = result.stderr + result.stdout
+        m = re.search(r'version "(\d+)', ver_text)
+        if m:
+            major = int(m.group(1))
+            if major == 1:
+                m2 = re.search(r'version "1\.(\d+)', ver_text)
+                major = int(m2.group(1)) if m2 else 8
+            return major >= 17
+        return False
+    except Exception:
         return False
 
 

@@ -97,6 +97,11 @@ class KGeoMIP(SIA):
         candidatas = self._identificar_candidatas()
 
         # Paso 5: evaluar candidatas con EMD
+        # Cap total de evaluaciones para n>10 (evita evaluar miles de candidatas de Estrategia 1)
+        if n > 10:
+            max_eval = 5_000
+            candidatas = candidatas[:max_eval]
+
         mejor_phi = float('inf')
         mejor_biparticion = (list(range(n // 2)), list(range(n // 2, n)))
         mejor_dist_part = dist_orig.copy()
@@ -211,9 +216,15 @@ class KGeoMIP(SIA):
         for v, T in self.tabla_costos.items():
             filas[v] = T['fila_inicio'] if isinstance(T, dict) else T[idx_inicio]
 
-        # Estrategia 1: costos cero como guía (siempre)
+        # Estrategia 1: costos cero como guía.
+        # Para n>10: límite de 50 candidatas (estado cero-costo puede ser masivo)
+        max_s1 = 50 if n > 10 else None
         for v, fila in filas.items():
+            if max_s1 and len(candidatas) >= max_s1:
+                break
             for j, costo in enumerate(fila):
+                if max_s1 and len(candidatas) >= max_s1:
+                    break
                 if costo < 1e-10 and j != idx_inicio:
                     xor = idx_inicio ^ j
                     bits = sorted([b for b in range(n) if (xor >> b) & 1])
@@ -287,38 +298,38 @@ class KGeoMIP(SIA):
         """
         Calcula P(sistema_partido | estado_inicial) = dist1 ⊗ dist2.
 
-        Versión vectorizada: reemplaza el bucle Python `for s in range(2^n)`
-        con operaciones numpy (np.add.at sobre arrays de 32768 filas).
-        Speedup: ~100× para n=15 (50ms → 0.5ms por llamada).
+        Usa np.bincount por columna (~30× más rápido que np.add.at para N=32768).
+        all_states se cachea en la instancia para evitar recrearlo por bipartición.
         """
         n      = self.sistema.n
         tpm    = self.sistema.tpm
         estado = self.sistema.estado_inicial
 
-        all_states = np.arange(2 ** n, dtype=np.int32)   # precalculado una vez
+        # Cache all_states por instancia (evita np.arange(32768) por llamada)
+        if not hasattr(self, '_all_states_cache') or len(self._all_states_cache) != 2 ** n:
+            self._all_states_cache = np.arange(2 ** n, dtype=np.int32)
+        all_states = self._all_states_cache
 
         def dist_parte(futuro: list, presente: list) -> NDArray:
             if not futuro or not presente:
                 return np.array([1.0])
 
             cols  = sorted(j for j in range(n) if j in futuro)
-            tpm_c = tpm[:, cols]
             pres  = sorted(presente)
             n_p   = len(pres)
             num_p = 2 ** n_p
 
-            # Índice reducido: reducir cada estado a sus bits en 'pres'
+            # Índice reducido vectorizado
             idx_red = np.zeros(2 ** n, dtype=np.int32)
             for pos_p, v in enumerate(pres):
                 idx_red += ((all_states >> v) & 1) << pos_p
 
-            # Marginalización vectorizada (reemplaza for-loop Python)
+            # Marginalización con np.bincount (sin np.add.at, 30× más rápido)
+            cnt = np.bincount(idx_red, minlength=num_p)
+            safe_cnt = np.maximum(cnt, 1)
             tpm_r = np.zeros((num_p, len(cols)), dtype=np.float64)
-            cnt   = np.zeros(num_p, dtype=np.int32)
-            np.add.at(tpm_r, idx_red, tpm_c)
-            np.add.at(cnt,   idx_red, 1)
-            mask = cnt > 0
-            tpm_r[mask] /= cnt[mask, np.newaxis]
+            for jj, c in enumerate(cols):
+                tpm_r[:, jj] = np.bincount(idx_red, weights=tpm[:, c], minlength=num_p) / safe_cnt
 
             # Estado inicial reducido al mecanismo de esta parte
             est_r = ''.join(estado[v] for v in pres)
