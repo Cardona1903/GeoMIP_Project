@@ -309,7 +309,9 @@ class KQNodes(SIA):
         t0     = time.time()
         if timeout_s is None:
             n_loc = len(variables)
-            if n_loc >= 18:
+            if n_loc >= 23:
+                timeout_s = 20.0   # n>=23: 20s por k → ~80s total k=2,3,4,5
+            elif n_loc >= 18:
                 timeout_s = 12.0   # 4 k-values × 12s ≈ 48s total
             elif n_loc >= 15:
                 timeout_s = 25.0   # 4 k-values × 25s ≈ 100s total
@@ -383,8 +385,11 @@ class KQNodes(SIA):
                     break
 
         # Fase 2: intercambiar pares de variables entre grupos
+        n_loc_swap = len(variables)
+        max_swaps = 5 if n_loc_swap >= 23 else (20 if n_loc_swap >= 18 else 100)
+        swap_count = 0
         swap_mejorado = True
-        while swap_mejorado and (time.time() - t0) < timeout_s * 0.9:
+        while swap_mejorado and swap_count < max_swaps and (time.time() - t0) < timeout_s * 0.9:
             swap_mejorado = False
             for g1 in range(k):
                 if swap_mejorado:
@@ -396,7 +401,7 @@ class KQNodes(SIA):
                         if swap_mejorado:
                             break
                         for v2 in list(grupos[g2]):
-                            if (time.time() - t0) > timeout_s * 0.9:
+                            if swap_count >= max_swaps or (time.time() - t0) > timeout_s * 0.9:
                                 break
                             nuevos = [list(g) for g in grupos]
                             nuevos[g1].remove(v1)
@@ -404,6 +409,7 @@ class KQNodes(SIA):
                             nuevos[g2].remove(v2)
                             nuevos[g2].append(v1)
                             phi_n = calcular_phi(nuevos)
+                            swap_count += 1
                             if phi_n < phi_actual - 1e-9:
                                 grupos        = nuevos
                                 phi_actual    = phi_n

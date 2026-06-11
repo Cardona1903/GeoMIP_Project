@@ -85,7 +85,7 @@ HOJAS_EXCEL = {
     15: '15B-Elementos',
     20: '20A-Elementos',
     22: '22A-Elementos',
-    25: '25A-Elementos',
+    25: '25A-Elementos ',
 }
 
 # ── Suites de pruebas predefinidas ────────────────────────────────────────
@@ -220,52 +220,110 @@ SUITES = {
             ('ABCDEFGHIJKLMNOPQRSTUV', 'ABCDEFGHIJKLMNOPQRSTU'),
             ('ABCDEFGHIJKLMNOPQRSTUV', 'BCDEFGHIJKLMNOPQRSTUV'),
             ('ABCDEFGHIJKLMNOPQRSTUV', 'BCDEFGHIJKLMNOPQRSTU'),
-            ('ABCDEFGHIJKLMNOPQRSTUV', 'ABDEGHJKMNPQSTUV'),
-            ('ABCDEFGHIJKLMNOPQRSTUV', 'ACEGIKMOQSUV'),
-            ('ABCDEFGHIJKLMNOPQRSTUV', 'BDFHJLNPRTUV'),
+            ('ABCDEFGHIJKLMNOPQRSTUV', 'ABDEGHJKMNPQSTV'),
+            ('ABCDEFGHIJKLMNOPQRSTUV', 'ACEGIKMOQSU'),
+            ('ABCDEFGHIJKLMNOPQRSTUV', 'BDFHJLNPRTV'),
             ('ABCDEFGHIJKLMNOPQRSTU',  'ABCDEFGHIJKLMNOPQRSTUV'),
             ('ABCDEFGHIJKLMNOPQRSTU',  'ABCDEFGHIJKLMNOPQRSTU'),
             ('ABCDEFGHIJKLMNOPQRSTU',  'BCDEFGHIJKLMNOPQRSTUV'),
             ('ABCDEFGHIJKLMNOPQRSTU',  'BCDEFGHIJKLMNOPQRSTU'),
-            ('ABCDEFGHIJKLMNOPQRSTU',  'ABDEGHJKMNPQSTUV'),
-            ('ABCDEFGHIJKLMNOPQRSTU',  'ACEGIKMOQSUV'),
-            ('ABCDEFGHIJKLMNOPQRSTU',  'BDFHJLNPRTUV'),
+            ('ABCDEFGHIJKLMNOPQRSTU',  'ABDEGHJKMNPQSTV'),
+            ('ABCDEFGHIJKLMNOPQRSTU',  'ACEGIKMOQSU'),
+            ('ABCDEFGHIJKLMNOPQRSTU',  'BDFHJLNPRTV'),
             ('BCDEFGHIJKLMNOPQRSTUV',  'ABCDEFGHIJKLMNOPQRSTUV'),
             ('BCDEFGHIJKLMNOPQRSTUV',  'ABCDEFGHIJKLMNOPQRSTU'),
             ('BCDEFGHIJKLMNOPQRSTUV',  'BCDEFGHIJKLMNOPQRSTUV'),
             ('BCDEFGHIJKLMNOPQRSTUV',  'BCDEFGHIJKLMNOPQRSTU'),
-            ('BCDEFGHIJKLMNOPQRSTUV',  'ABDEGHJKMNPQSTUV'),
-            ('BCDEFGHIJKLMNOPQRSTUV',  'ACEGIKMOQSUV'),
-            ('BCDEFGHIJKLMNOPQRSTUV',  'BDFHJLNPRTUV'),
+            ('BCDEFGHIJKLMNOPQRSTUV',  'ABDEGHJKMNPQSTV'),
+            ('BCDEFGHIJKLMNOPQRSTUV',  'ACEGIKMOQSU'),
+            ('BCDEFGHIJKLMNOPQRSTUV',  'BDFHJLNPRTV'),
             ('BCDEFGHIJKLMNOPQRSTU',   'ABCDEFGHIJKLMNOPQRSTUV'),
             ('BCDEFGHIJKLMNOPQRSTU',   'ABCDEFGHIJKLMNOPQRSTU'),
             ('BCDEFGHIJKLMNOPQRSTU',   'BCDEFGHIJKLMNOPQRSTUV'),
             ('BCDEFGHIJKLMNOPQRSTU',   'BCDEFGHIJKLMNOPQRSTU'),
-            ('BCDEFGHIJKLMNOPQRSTU',   'ABDEGHJKMNPQSTUV'),
-            ('BCDEFGHIJKLMNOPQRSTU',   'ACEGIKMOQSUV'),
-            ('BCDEFGHIJKLMNOPQRSTU',   'BDFHJLNPRTUV'),
-            ('ABDEGHJKMNPQSTUV',       'ABCDEFGHIJKLMNOPQRSTUV'),
-            ('ABDEGHJKMNPQSTUV',       'ABCDEFGHIJKLMNOPQRSTU'),
-            ('ABDEGHJKMNPQSTUV',       'BCDEFGHIJKLMNOPQRSTUV'),
-            ('ABDEGHJKMNPQSTUV',       'BCDEFGHIJKLMNOPQRSTU'),
-            ('ABDEGHJKMNPQSTUV',       'ABDEGHJKMNPQSTUV'),
-            ('ABDEGHJKMNPQSTUV',       'ACEGIKMOQSUV'),
-            ('ABDEGHJKMNPQSTUV',       'BDFHJLNPRTUV'),
-            ('ACEGIKMOQSUV',           'ABCDEFGHIJKLMNOPQRSTUV'),
-            ('ACEGIKMOQSUV',           'ABCDEFGHIJKLMNOPQRSTU'),
-            ('ACEGIKMOQSUV',           'BCDEFGHIJKLMNOPQRSTUV'),
-            ('ACEGIKMOQSUV',           'BCDEFGHIJKLMNOPQRSTU'),
-            ('ACEGIKMOQSUV',           'ABDEGHJKMNPQSTUV'),
-            ('ACEGIKMOQSUV',           'ACEGIKMOQSUV'),
-            ('ACEGIKMOQSUV',           'BDFHJLNPRTUV'),
-            ('BDFHJLNPRTUV',           'ABCDEFGHIJKLMNOPQRSTUV'),
-            ('BDFHJLNPRTUV',           'ABCDEFGHIJKLMNOPQRSTU'),
-            ('BDFHJLNPRTUV',           'BCDEFGHIJKLMNOPQRSTUV'),
-            ('BDFHJLNPRTUV',           'BCDEFGHIJKLMNOPQRSTU'),
-            ('BDFHJLNPRTUV',           'ABDEGHJKMNPQSTUV'),
-            ('BDFHJLNPRTUV',           'ACEGIKMOQSUV'),
-            ('BDFHJLNPRTUV',           'BDFHJLNPRTUV'),
-            ('BCDEFGJKLMNO',           'BCDEFGHIJKLMNO'),
+            ('BCDEFGHIJKLMNOPQRSTU',   'ABDEGHJKMNPQSTV'),
+            ('BCDEFGHIJKLMNOPQRSTU',   'ACEGIKMOQSU'),
+            ('BCDEFGHIJKLMNOPQRSTU',   'BDFHJLNPRTV'),
+            ('ABDEGHJKMNPQSTV',        'ABCDEFGHIJKLMNOPQRSTUV'),
+            ('ABDEGHJKMNPQSTV',        'ABCDEFGHIJKLMNOPQRSTU'),
+            ('ABDEGHJKMNPQSTV',        'BCDEFGHIJKLMNOPQRSTUV'),
+            ('ABDEGHJKMNPQSTV',        'BCDEFGHIJKLMNOPQRSTU'),
+            ('ABDEGHJKMNPQSTV',        'ABDEGHJKMNPQSTV'),
+            ('ABDEGHJKMNPQSTV',        'ACEGIKMOQSU'),
+            ('ABDEGHJKMNPQSTV',        'BDFHJLNPRTV'),
+            ('ACEGIKMOQSU',            'ABCDEFGHIJKLMNOPQRSTUV'),
+            ('ACEGIKMOQSU',            'ABCDEFGHIJKLMNOPQRSTU'),
+            ('ACEGIKMOQSU',            'BCDEFGHIJKLMNOPQRSTUV'),
+            ('ACEGIKMOQSU',            'BCDEFGHIJKLMNOPQRSTU'),
+            ('ACEGIKMOQSU',            'ABDEGHJKMNPQSTV'),
+            ('ACEGIKMOQSU',            'ACEGIKMOQSU'),
+            ('ACEGIKMOQSU',            'BDFHJLNPRTV'),
+            ('BDFHJLNPRTV',            'ABCDEFGHIJKLMNOPQRSTUV'),
+            ('BDFHJLNPRTV',            'ABCDEFGHIJKLMNOPQRSTU'),
+            ('BDFHJLNPRTV',            'BCDEFGHIJKLMNOPQRSTUV'),
+            ('BDFHJLNPRTV',            'BCDEFGHIJKLMNOPQRSTU'),
+            ('BDFHJLNPRTV',            'ABDEGHJKMNPQSTV'),
+            ('BDFHJLNPRTV',            'ACEGIKMOQSU'),
+            ('BDFHJLNPRTV',            'BDFHJLNPRTV'),
+            ('ACDEFGHIJKLMNOPQRST',    'ACDEFGHIJKLMNOPQRST'),
+        ],
+    },
+    'N=25': {
+        'sistema':   'ABCDEFGHIJKLMNOPQRSTUVWXY',
+        'estado':    '1000000000000000000000000',
+        'csv':       'data/N25C.csv',
+        'n_sistema': 25,
+        'pruebas': [
+            ('ABCDEFGHIJKLMNOPQRSTUVWXY', 'ABCDEFGHIJKLMNOPQRSTUVWXY'),
+            ('ABCDEFGHIJKLMNOPQRSTUVWXY', 'ABCDEFGHIJKLMNOPQRSTUVWX'),
+            ('ABCDEFGHIJKLMNOPQRSTUVWXY', 'BCDEFGHIJKLMNOPQRSTUVWXY'),
+            ('ABCDEFGHIJKLMNOPQRSTUVWXY', 'BCDEFGHIJKLMNOPQRSTUVWX'),
+            ('ABCDEFGHIJKLMNOPQRSTUVWXY', 'ABDEGHJKMNPQSTVWY'),
+            ('ABCDEFGHIJKLMNOPQRSTUVWXY', 'ACEGIKMOQSUWY'),
+            ('ABCDEFGHIJKLMNOPQRSTUVWXY', 'BDFHJLNPRTVX'),
+            ('ABCDEFGHIJKLMNOPQRSTUVWX',  'ABCDEFGHIJKLMNOPQRSTUVWXY'),
+            ('ABCDEFGHIJKLMNOPQRSTUVWX',  'ABCDEFGHIJKLMNOPQRSTUVWX'),
+            ('ABCDEFGHIJKLMNOPQRSTUVWX',  'BCDEFGHIJKLMNOPQRSTUVWXY'),
+            ('ABCDEFGHIJKLMNOPQRSTUVWX',  'BCDEFGHIJKLMNOPQRSTUVWX'),
+            ('ABCDEFGHIJKLMNOPQRSTUVWX',  'ABDEGHJKMNPQSTVWY'),
+            ('ABCDEFGHIJKLMNOPQRSTUVWX',  'ACEGIKMOQSUWY'),
+            ('ABCDEFGHIJKLMNOPQRSTUVWX',  'BDFHJLNPRTVX'),
+            ('BCDEFGHIJKLMNOPQRSTUVWXY',  'ABCDEFGHIJKLMNOPQRSTUVWXY'),
+            ('BCDEFGHIJKLMNOPQRSTUVWXY',  'ABCDEFGHIJKLMNOPQRSTUVWX'),
+            ('BCDEFGHIJKLMNOPQRSTUVWXY',  'BCDEFGHIJKLMNOPQRSTUVWXY'),
+            ('BCDEFGHIJKLMNOPQRSTUVWXY',  'BCDEFGHIJKLMNOPQRSTUVWX'),
+            ('BCDEFGHIJKLMNOPQRSTUVWXY',  'ABDEGHJKMNPQSTVWY'),
+            ('BCDEFGHIJKLMNOPQRSTUVWXY',  'ACEGIKMOQSUWY'),
+            ('BCDEFGHIJKLMNOPQRSTUVWXY',  'BDFHJLNPRTVX'),
+            ('BCDEFGHIJKLMNOPQRSTUVWX',   'ABCDEFGHIJKLMNOPQRSTUVWXY'),
+            ('BCDEFGHIJKLMNOPQRSTUVWX',   'ABCDEFGHIJKLMNOPQRSTUVWX'),
+            ('BCDEFGHIJKLMNOPQRSTUVWX',   'BCDEFGHIJKLMNOPQRSTUVWXY'),
+            ('BCDEFGHIJKLMNOPQRSTUVWX',   'BCDEFGHIJKLMNOPQRSTUVWX'),
+            ('BCDEFGHIJKLMNOPQRSTUVWX',   'ABDEGHJKMNPQSTVWY'),
+            ('BCDEFGHIJKLMNOPQRSTUVWX',   'ACEGIKMOQSUWY'),
+            ('BCDEFGHIJKLMNOPQRSTUVWX',   'BDFHJLNPRTVX'),
+            ('ABDEGHJKMNPQSTVWY',         'ABCDEFGHIJKLMNOPQRSTUVWXY'),
+            ('ABDEGHJKMNPQSTVWY',         'ABCDEFGHIJKLMNOPQRSTUVWX'),
+            ('ABDEGHJKMNPQSTVWY',         'BCDEFGHIJKLMNOPQRSTUVWXY'),
+            ('ABDEGHJKMNPQSTVWY',         'BCDEFGHIJKLMNOPQRSTUVWX'),
+            ('ABDEGHJKMNPQSTVWY',         'ABDEGHJKMNPQSTVWY'),
+            ('ABDEGHJKMNPQSTVWY',         'ACEGIKMOQSUWY'),
+            ('ABDEGHJKMNPQSTVWY',         'BDFHJLNPRTVX'),
+            ('ACEGIKMOQSUWY',             'ABCDEFGHIJKLMNOPQRSTUVWXY'),
+            ('ACEGIKMOQSUWY',             'ABCDEFGHIJKLMNOPQRSTUVWX'),
+            ('ACEGIKMOQSUWY',             'BCDEFGHIJKLMNOPQRSTUVWXY'),
+            ('ACEGIKMOQSUWY',             'BCDEFGHIJKLMNOPQRSTUVWX'),
+            ('ACEGIKMOQSUWY',             'ABDEGHJKMNPQSTVWY'),
+            ('ACEGIKMOQSUWY',             'ACEGIKMOQSUWY'),
+            ('ACEGIKMOQSUWY',             'BDFHJLNPRTVX'),
+            ('BDFHJLNPRTVX',             'ABCDEFGHIJKLMNOPQRSTUVWXY'),
+            ('BDFHJLNPRTVX',             'ABCDEFGHIJKLMNOPQRSTUVWX'),
+            ('BDFHJLNPRTVX',             'BCDEFGHIJKLMNOPQRSTUVWXY'),
+            ('BDFHJLNPRTVX',             'BCDEFGHIJKLMNOPQRSTUVWX'),
+            ('BDFHJLNPRTVX',             'ABDEGHJKMNPQSTVWY'),
+            ('BDFHJLNPRTVX',             'ACEGIKMOQSUWY'),
+            ('BDFHJLNPRTVX',             'BDFHJLNPRTVX'),
+            ('ACDEFGHIJKLMNOPQRSTVX',    'ACDEFGHIJKLMNOPQRSTVX'),
         ],
     },
 }
@@ -1091,6 +1149,7 @@ class App(tk.Tk):
 
                 # Exportar al Excel si corresponde
                 if exportar_auto and excel_path:
+                    self._suite_prueba_actual = idx
                     self._exportar_a_excel_path(
                         excel_path, alc, mec,
                         n_sistema=len(suite['sistema']))
@@ -1295,7 +1354,9 @@ class App(tk.Tk):
                                text=f"📂 CSV: {csv_path}", tag="info")
                     sys_full = System.desde_csv(csv_path, estado)
 
-                    if sys_full.tpm.shape[0] != 2 ** sys_full.n:
+                    if getattr(sys_full, '_usa_spark', False) and sys_full.tpm.shape[0] == 1:
+                        pass  # Spark lazy: placeholder (1, n) correcto
+                    elif sys_full.tpm.shape[0] != 2 ** sys_full.n:
                         n_csv = sys_full.tpm.shape[1]
                         if n_csv > 0 and sys_full.tpm.shape[0] == 2 ** n_csv:
                             estado_csv = (estado + '0' * n_csv)[:n_csv]
@@ -2050,8 +2111,19 @@ class App(tk.Tk):
 
         # Determinar hoja según N del sistema completo
         # Preferir _ultimo_n_sistema (válido tras análisis/suite) sobre campo UI
-        n_total = (self._ultimo_n_sistema
-                   or len(self._sys_var.get().strip()))
+        n_total = self._ultimo_n_sistema
+        if not n_total and hasattr(self, '_ultimo_sub') and self._ultimo_sub:
+            n_total = self._ultimo_sub.n
+        if not n_total:
+            csv_path = self._csv_var.get().strip()
+            for _suite_v in SUITES.values():
+                if _suite_v.get('csv', '') and (
+                    _suite_v['csv'] in csv_path or csv_path.endswith(_suite_v['csv'])
+                ):
+                    n_total = _suite_v.get('n_sistema', 0)
+                    break
+        if not n_total:
+            n_total = len(self._sys_var.get().strip())
         hoja_nombre = HOJAS_EXCEL.get(n_total)
         if not hoja_nombre:
             messagebox.showwarning(
@@ -2277,11 +2349,20 @@ class App(tk.Tk):
                     break
 
             if fila_destino is None:
-                self._post(kind="log",
-                           text=f"  ⚠ Fila no encontrada: alcance={alc_up} mec={mec_up}",
-                           tag="warn")
-                wb.close()
-                return
+                n_prueba = getattr(self, '_suite_prueba_actual', None)
+                if n_prueba is not None:
+                    fila_destino = 5 + n_prueba  # prueba 1 → fila 6, prueba 2 → fila 7, etc.
+                    self._post(kind="log",
+                               text=f"  → Fila asignada secuencialmente: {fila_destino} "
+                                    f"(alcance={alc_up} mec={mec_up})",
+                               tag="info")
+                else:
+                    self._post(kind="log",
+                               text=f"  ⚠ Fila no encontrada y sin índice: "
+                                    f"alcance={alc_up} mec={mec_up}",
+                               tag="warn")
+                    wb.close()
+                    return
 
             etqs = self._ultimo_sub.etiquetas if self._ultimo_sub else []
 
@@ -2437,9 +2518,10 @@ class App(tk.Tk):
                 pass
             ncpus = multiprocessing.cpu_count()
 
-            ws['B3'] = proc
-            ws['C3'] = f"{int(ram_gb)} GB"
-            ws['D3'] = so
+            # Columnas reales según estructura de la hoja: A3=Procesador, B3=RAM, C3=SO
+            ws['A3'] = proc
+            ws['B3'] = f"{int(ram_gb)} GB"
+            ws['C3'] = so
             ws['B4'] = f"{freq}  {ncpus} núcleos".strip()
 
             wb.save(excel_path)

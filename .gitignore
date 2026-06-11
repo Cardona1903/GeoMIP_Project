@@ -1,6 +1,7 @@
 # CSVs grandes (>50 MB) — mantener localmente, no subir a GitHub
 data/N20C.csv
 data/N22C.csv
+data/N25C.csv
 
 # Python
 __pycache__/

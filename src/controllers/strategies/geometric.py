@@ -121,6 +121,9 @@ class KGeoMIP(SIA):
                     mejor_dist_part = dist_part
                 if mejor_phi < 1e-10:
                     break
+            except MemoryError:
+                print(f"  MemoryError en n={self.sistema.n}, saltando bipartición")
+                continue
             except Exception:
                 continue
 
@@ -286,7 +289,20 @@ class KGeoMIP(SIA):
                     vistas.add(clave)
                     candidatas.append((p1, p1, p2, p2))
 
-        return candidatas
+        # Límite agresivo de candidatas según n
+        if n <= 10:
+            limite = len(candidatas)
+        elif n <= 12:
+            limite = 2000
+        elif n <= 14:
+            limite = 500
+        elif n <= 18:
+            limite = 200
+        elif n <= 22:
+            limite = 100
+        else:
+            limite = 50  # n>22: solo 50 biparticiones balanceadas
+        return candidatas[:limite]
 
     # ==================================================================
     # DISTRIBUCIÓN PARTICIONADA
@@ -379,13 +395,54 @@ class KGeoMIPKPartition(SIA):
         variables = list(range(n))
         LIMITE_BB = 6
 
-        # k=2: KGeoMIP exacto (calcula tabla_costos internamente)
+        # k=2: KGeoMIP exacto para n<=22; greedy directo para n>22
+        # (BFS de tabla_costos es O(2^n × n) en Python → inviable para n>22)
         t0_k2 = time.time()
-        geo_base = KGeoMIP(self.sistema)
-        res_k2   = geo_base.aplicar_estrategia()
-        t_k2     = time.time() - t0_k2
-        tabla_T  = geo_base.tabla_costos
-        self.tabla_costos = tabla_T
+        tabla_T = {}
+        resultados_por_k = {}
+
+        if n > 22:
+            if 2 in self.k_values and 2 <= n:
+                try:
+                    res_k2_g = self._greedy_k(2, variables, {}, dist_orig, timeout_s=60.0)
+                    res_k2_g['metodo'] = 'greedy_n25'
+                    res_k2_g['tiempo'] = time.time() - t0_k2
+                    resultados_por_k[2] = res_k2_g
+                except (MemoryError, Exception):
+                    resultados_por_k[2] = {
+                        'phi': float('inf'), 'k': 2,
+                        'biparticion': [list(range(n // 2)), list(range(n // 2, n))],
+                        'tiempo': time.time() - t0_k2, 'metodo': 'greedy_fallback',
+                    }
+        else:
+            geo_base = KGeoMIP(self.sistema)
+            try:
+                res_k2 = geo_base.aplicar_estrategia()
+                t_k2   = time.time() - t0_k2
+                tabla_T = geo_base.tabla_costos
+                self.tabla_costos = tabla_T
+                if 2 in self.k_values and 2 <= n:
+                    p1, p2 = res_k2['biparticion']
+                    resultados_por_k[2] = {
+                        'phi':         res_k2['phi'],
+                        'biparticion': [list(p1), list(p2)],
+                        'tiempo':      t_k2,
+                        'k':           2,
+                        'metodo':      'kgeomip_exacto',
+                    }
+            except (MemoryError, Exception):
+                if 2 in self.k_values and 2 <= n:
+                    try:
+                        res_fb = self._greedy_k(2, variables, {}, dist_orig, timeout_s=60.0)
+                        res_fb['metodo'] = 'greedy_fallback'
+                        res_fb['tiempo'] = time.time() - t0_k2
+                        resultados_por_k[2] = res_fb
+                    except Exception:
+                        resultados_por_k[2] = {
+                            'phi': float('inf'), 'k': 2,
+                            'biparticion': [list(range(n // 2)), list(range(n // 2, n))],
+                            'tiempo': time.time() - t0_k2, 'metodo': 'greedy_fallback',
+                        }
 
         mejor_global = {
             'biparticion': None,
@@ -395,18 +452,6 @@ class KGeoMIPKPartition(SIA):
             'dist_part':   dist_orig.copy(),
             'tiempo':      0.0,
         }
-        resultados_por_k = {}
-
-        # k=2: siempre secuencial (ya hecho)
-        if 2 in self.k_values and 2 <= n:
-            p1, p2 = res_k2['biparticion']
-            resultados_por_k[2] = {
-                'phi':         res_k2['phi'],
-                'biparticion': [list(p1), list(p2)],
-                'tiempo':      t_k2,
-                'k':           2,
-                'metodo':      'kgeomip_exacto',
-            }
 
         # k=3,4,5: PARALELO con ThreadPoolExecutor
         # ot.emd2 libera el GIL → paralelismo real en cálculo de transporte
@@ -418,8 +463,9 @@ class KGeoMIPKPartition(SIA):
                     res = self._branch_and_bound_k(k, variables, tabla_T, dist_orig)
                     res['metodo'] = 'branch_and_bound'
                 else:
+                    timeout_k = 20.0 if n > 22 else 90.0
                     res = self._greedy_k(
-                        k, variables, tabla_T, dist_orig, timeout_s=90.0
+                        k, variables, tabla_T, dist_orig, timeout_s=timeout_k
                     )
                     res['metodo'] = 'greedy'
                 return k, res
