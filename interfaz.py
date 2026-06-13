@@ -1277,6 +1277,43 @@ class App(tk.Tk):
                                text=f"  ⚠ Alcance y mecanismo no comparten "
                                     f"variables — φ no definido (= 0).",
                                tag="warn")
+                    _rv_geo = {
+                        'phi': 0.0, 'k': None, 'biparticion': [[], []],
+                        'tiempo': 0.0, 'nota': 'interseccion_vacia',
+                        'resultados_por_k': {
+                            k: {'phi': 0.0, 'biparticion': [[], []], 'tiempo': 0.0,
+                                'k': k, 'metodo': 'vacio'}
+                            for k in [2, 3, 4, 5]
+                        }
+                    }
+                    _rv_qn = {
+                        'phi': 0.0, 'k': None, 'biparticion': [[], []],
+                        'tiempo': 0.0, 'nota': 'interseccion_vacia',
+                        'resultados_por_k': {
+                            k: {'phi': 0.0, 'biparticion': [[], []], 'tiempo': 0.0,
+                                'k': k, 'metodo': 'vacio'}
+                            for k in [2, 3, 4, 5]
+                        },
+                        'por_k': {
+                            3: {'phi': 0.0, 'biparticion': [[], [], []], 'tiempo': 0.0,
+                                'k': 3, 'metodo': 'vacio'},
+                            4: {'phi': 0.0, 'biparticion': [[], [], [], []], 'tiempo': 0.0,
+                                'k': 4, 'metodo': 'vacio'},
+                            5: {'phi': 0.0, 'biparticion': [[], [], [], [], []], 'tiempo': 0.0,
+                                'k': 5, 'metodo': 'vacio'},
+                        }
+                    }
+                    for _s, _k in [("KGeoMIP", "2"), ("KQNodes", "3"),
+                                   ("KQNodes", "4"), ("KQNodes", "5")]:
+                        self._post(kind="row",
+                                   values=(_s, _k, "∅ (sin intersección)",
+                                           "0.000000", "0.000"))
+                    self._post(kind="done",
+                               elapsed=time.time() - t0,
+                               geo=_rv_geo, qnod=_rv_qn,
+                               sistema=sistema, alcance=alcance, mec=mec,
+                               sub=sub)
+                    return
             else:
                 n_sub  = min(len(alcance), len(mec))
                 n_rows = 2 ** min(n_sub, 20)
@@ -1395,29 +1432,33 @@ class App(tk.Tk):
                     res_geo_vacio = {
                         'phi':              0.0,
                         'k':                None,
-                        'biparticion':      None,
+                        'biparticion':      [[], []],
                         'tiempo':           0.0,
                         'nota':             'interseccion_vacia',
                         'resultados_por_k': {
-                            2: {'phi': 0.0, 'biparticion': None, 'tiempo': 0.0, 'k': 2, 'metodo': 'vacio'},
-                            3: {'phi': 0.0, 'biparticion': None, 'tiempo': 0.0, 'k': 3, 'metodo': 'vacio'},
-                            4: {'phi': 0.0, 'biparticion': None, 'tiempo': 0.0, 'k': 4, 'metodo': 'vacio'},
-                            5: {'phi': 0.0, 'biparticion': None, 'tiempo': 0.0, 'k': 5, 'metodo': 'vacio'},
+                            2: {'phi': 0.0, 'biparticion': [[], []], 'tiempo': 0.0, 'k': 2, 'metodo': 'vacio'},
+                            3: {'phi': 0.0, 'biparticion': [[], []], 'tiempo': 0.0, 'k': 3, 'metodo': 'vacio'},
+                            4: {'phi': 0.0, 'biparticion': [[], []], 'tiempo': 0.0, 'k': 4, 'metodo': 'vacio'},
+                            5: {'phi': 0.0, 'biparticion': [[], []], 'tiempo': 0.0, 'k': 5, 'metodo': 'vacio'},
                         }
                     }
                     res_qn_vacio = {
                         'phi':              0.0,
                         'k':                None,
-                        'biparticion':      None,
+                        'biparticion':      [[], []],
                         'tiempo':           0.0,
                         'nota':             'interseccion_vacia',
                         'resultados_por_k': {
-                            2: {'phi': 0.0, 'biparticion': None, 'tiempo': 0.0, 'k': 2, 'metodo': 'vacio'},
-                            3: {'phi': 0.0, 'biparticion': None, 'tiempo': 0.0, 'k': 3, 'metodo': 'vacio'},
-                            4: {'phi': 0.0, 'biparticion': None, 'tiempo': 0.0, 'k': 4, 'metodo': 'vacio'},
-                            5: {'phi': 0.0, 'biparticion': None, 'tiempo': 0.0, 'k': 5, 'metodo': 'vacio'},
+                            2: {'phi': 0.0, 'biparticion': [[], []], 'tiempo': 0.0, 'k': 2, 'metodo': 'vacio'},
+                            3: {'phi': 0.0, 'biparticion': [[], []], 'tiempo': 0.0, 'k': 3, 'metodo': 'vacio'},
+                            4: {'phi': 0.0, 'biparticion': [[], []], 'tiempo': 0.0, 'k': 4, 'metodo': 'vacio'},
+                            5: {'phi': 0.0, 'biparticion': [[], []], 'tiempo': 0.0, 'k': 5, 'metodo': 'vacio'},
                         },
-                        'por_k': {}
+                        'por_k': {
+                            3: {'phi': 0.0, 'biparticion': [[], [], []], 'tiempo': 0.0, 'k': 3, 'metodo': 'vacio'},
+                            4: {'phi': 0.0, 'biparticion': [[], [], [], []], 'tiempo': 0.0, 'k': 4, 'metodo': 'vacio'},
+                            5: {'phi': 0.0, 'biparticion': [[], [], [], [], []], 'tiempo': 0.0, 'k': 5, 'metodo': 'vacio'},
+                        }
                     }
                     self._ultimo_res_geo      = res_geo_vacio
                     self._ultimo_res_geo_full = None   # evitar datos geo_full de prueba anterior
@@ -1433,6 +1474,12 @@ class App(tk.Tk):
                     def _ui_vacio():
                         self._generar_analisis(res_geo_vacio, res_qn_vacio, sub, 0.0, 0.0)
                         self._agregar_fila_excel(res_geo_vacio, res_qn_vacio, sub, _alc, _mec)
+                        # Insertar filas en el Treeview con φ=0
+                        for _strat, _k in [("KGeoMIP", "2"), ("KQNodes", "3"),
+                                           ("KQNodes", "4"), ("KQNodes", "5")]:
+                            _vals = (_strat, _k, "∅ (sin intersección)", "0.000000", "0.000")
+                            self._tree.insert("", tk.END, values=_vals, tags=("phi_zero",))
+                            self._results.append(_vals)
                         self._historial_analisis.append({
                             'alcance':      _alc,
                             'mecanismo':    _mec,
@@ -1745,7 +1792,8 @@ class App(tk.Tk):
 
         if res_geo:
             phi_g = res_geo["phi"]
-            p1, p2 = res_geo["biparticion"]
+            biparticion = res_geo.get("biparticion") or [[], []]
+            p1, p2 = biparticion
             part_g = (f"[{''.join(etqs[i] for i in p1)}]"
                       f" | [{''.join(etqs[i] for i in p2)}]")
             if phi_g < 1e-9:
@@ -2016,6 +2064,12 @@ class App(tk.Tk):
             'qn':      qn_d,
             'geo_kn':  geo_kn_d,
         })
+        # DEBUG temporal — eliminar después de verificar N=25 pruebas 42/48
+        _r = self._excel_rows[-1]
+        print(f"DEBUG _agregar_fila_excel: _excel_rows tiene {len(self._excel_rows)} entradas")
+        print(f"  prueba={_r['prueba']}  alcance={_r['alcance']}  mec={_r['mec']}")
+        print(f"  geo.phi={_r['geo'].get('phi','?')}  qn[3].phi={_r['qn'].get(3,{}).get('phi','?')}"
+              f"  qn[4].phi={_r['qn'].get(4,{}).get('phi','?')}  qn[5].phi={_r['qn'].get(5,{}).get('phi','?')}")
         self._actualizar_tab_excel()
 
     def _actualizar_tab_excel(self):
@@ -2244,7 +2298,7 @@ class App(tk.Tk):
                         continue
                     parts = res_k['biparticion']
                     part_str = ' | '.join(
-                        '{' + (lbl_part(p) or '?') + '}'
+                        '{' + (lbl_part(p) or '') + '}'
                         for p in parts
                     )
                     escribir(f'qnodes_k{k_val}_part', part_str)
@@ -2394,6 +2448,26 @@ class App(tk.Tk):
             res_qn  = self._ultimo_res_qn
             # _run_strategies almacena resultados por k bajo la clave 'por_k'
             por_k   = res_qn.get('por_k', {}) if res_qn else {}
+
+            # Caso intersección vacía: escribir ∅ / 0.0 en todas las columnas D-AA
+            _es_vacio = (res_geo and res_geo.get('nota') == 'interseccion_vacia')
+            if _es_vacio:
+                # cols D-AA en grupos de 3: (partición, phi, tiempo)
+                for _col_ini in [4, 7, 10, 13, 16, 19, 22, 25]:
+                    w(_col_ini,     '∅')
+                    w(_col_ini + 1, 0.0)
+                    w(_col_ini + 2, 0.0)
+                try:
+                    wb.save(excel_path)
+                    wb.close()
+                    self._post(kind="log",
+                               text=f"  ✓ Excel (∅): {hoja_nombre} fila {fila_destino}",
+                               tag="ok")
+                except PermissionError:
+                    self._post(kind="log",
+                               text=f"  ✗ Excel bloqueado (¿abierto en otro programa?)",
+                               tag="err")
+                return
 
             # ── BLOQUE 1: QNodes k=2 → cols D(4), E(5), F(6) ─────────────
             # KQNodes no calcula k=2; se usa la primera parte de k=3 vs el
